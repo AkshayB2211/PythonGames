@@ -128,8 +128,7 @@ def getTestBoard():
 
 def slideArray():
 	for x in range(NUM_CELLS):
-		for y in range(NUM_CELLS):
-			for _ in range(NUM_CELLS):
+		for y in range(NUM_CELLS-1, -1, -1):
 				if (BOARD[x][y] == 0):
 					del(BOARD[x][y])
 					BOARD[x].append(0)
@@ -137,7 +136,6 @@ def slideArray():
 def addArray():
 	for x in range(NUM_CELLS):
 		for y in range(NUM_CELLS-1):
-			for _ in range(2):
 				if BOARD[x][y] == BOARD[x][y+1]:
 					BOARD[x][y] += BOARD[x][y+1]
 					del(BOARD[x][y+1])
