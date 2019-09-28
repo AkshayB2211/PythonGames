@@ -1,5 +1,5 @@
 
-import pygame
+import pygame,sys
 
 # Define some colors
 BLACK    = (   0,   0,   0)
@@ -28,3 +28,4 @@ while not done:
 	clock.tick(60)
 
 pygame.quit()
+sys.exit()
