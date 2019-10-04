@@ -5,18 +5,18 @@ from pygame.locals import *
 # Game constants
 W_HEIGHT = 600
 W_WIDTH  = 800
-FPS 	 = 30
+FPS      = 30
 
 # Define some colors
-BLACK	=	(0, 0, 0)
-WHITE	=	(255, 255, 255)
-BLUE	=	(0, 0, 255)
-GREEN	=	(0, 255,   0)
-RED		=	(255, 0, 0)
-SKYBLUE	=	(0, 240, 255)
-GRASS	=	(50,170,20)
-GREY	=	(127, 127, 127)
-BROWN	=	(150, 110, 40)
+BLACK   =   (0, 0, 0)
+WHITE   =   (255, 255, 255)
+BLUE    =   (0, 0, 255)
+GREEN   =   (0, 255,   0)
+RED     =   (255, 0, 0)
+SKYBLUE =   (0, 240, 255)
+GRASS   =   (50,170,20)
+GREY    =   (127, 127, 127)
+BROWN   =   (150, 110, 40)
 
 
 def main():
@@ -27,20 +27,20 @@ def main():
 	pygame.display.set_caption("CARS MANIA")
 	clock = pygame.time.Clock()
 
-	Distance = 0.0				# Distance car has travelled around track
-	Curvature = 0.0				# Current track curvature, lerped between track sections
-	TrackCurvature = 0.0		# Accumulation of track curvature
-	TrackDistance = 0.0			# Total distance of track
+	Distance = 0.0              # Distance car has travelled around track
+	Curvature = 0.0             # Current track curvature, lerped between track sections
+	TrackCurvature = 0.0        # Accumulation of track curvature
+	TrackDistance = 0.0         # Total distance of track
 
-	CarPos = 0.0				# Current car position
-	PlayerCurvature = 0.0		# Accumulation of player curvature
-	Speed = 0.0					# Current player speed
+	CarPos = 0.0                # Current car position
+	PlayerCurvature = 0.0       # Accumulation of player curvature
+	Speed = 0.0                 # Current player speed
 
-	Track = []					# Track sections, sharpness of bend, length of section
+	Track = []                  # Track sections, sharpness of bend, length of section
 
-	listLapTimes = []			# List of previous lap times
-	CurrentLapTime = 0			# Current lap time
-	
+	listLapTimes = []           # List of previous lap times
+	CurrentLapTime = 0          # Current lap time
+
 	# Direction booleans
 	UP = False
 	LEFT = False
@@ -48,7 +48,7 @@ def main():
 
 
 	# Define track
-	Track.append((0.0, 10.0))	# Short section for start/finish line
+	Track.append((0.0, 10.0))   # Short section for start/finish line
 	Track.append((0.0, 200.0))
 	Track.append((0.5, 200.0))
 	Track.append((0.0, 400.0))
@@ -81,7 +81,7 @@ def main():
 			if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
 				pygame.quit()
 				sys.exit()
-				
+
 			if event.type == KEYDOWN:
 				if event.key in (K_LEFT, K_a) and not gameOver():
 					LEFT = True
@@ -91,7 +91,7 @@ def main():
 					UP = True
 				elif event.key in (K_DOWN, K_s) and not gameOver():
 					pass
-			
+
 			if event.type == KEYUP:
 				if event.key in (K_LEFT, K_a) and not gameOver():
 					LEFT = False
@@ -101,14 +101,14 @@ def main():
 					UP = False
 				elif event.key in (K_DOWN, K_s) and not gameOver():
 					pass
-				elif event.key == 13 and gameOver():		# Press Enter to restart
+				elif event.key == 13 and gameOver():        # Press Enter to restart
 					pass
-		
+
 		if (UP):
 			Speed += 2.0 * timeElapsed
 		else:
 			Speed -= 1.0 * timeElapsed
-		
+
 		# Car Curvature is accumulated left/right input, but inversely proportional to speed
 		# i.e. it is harder to turn at high speed
 		if (LEFT):
@@ -129,7 +129,7 @@ def main():
 			Speed = 0.0;
 		if (Speed > 1.0):
 			Speed = 1.0;
-		
+
 		# Move car along track according to car speed
 		Distance += (70 * Speed) * timeElapsed
 		#~ print(Distance)
@@ -165,7 +165,7 @@ def main():
 
 		# Draw Sky
 		pygame.draw.rect(SCREEN, SKYBLUE, (0, 0, W_WIDTH, W_HEIGHT//2))
-		
+
 		# Draw Scenery - our hills are a rectified sine wave, where the phase is adjusted by the
 		# accumulated track curvature
 		for x in range(W_WIDTH):
@@ -186,8 +186,8 @@ def main():
 			RightGrass = (MiddlePoint + RoadWidth + ClipWidth) * W_WIDTH
 
 			GrassColour = GREEN if (math.sin(20.0 * (1.0 - Perspective)**6 + Distance * 0.1) > 0.0) else GRASS
-			ClipColour 	= RED 	if (math.sin(80.0 * (1.0 - Perspective)**2 + Distance) > 0.0) else WHITE
-			RoadColour = WHITE 	if (TrackSection-1) == 0 else GREY
+			ClipColour  = RED   if (math.sin(80.0 * (1.0 - Perspective)**2 + Distance) > 0.0) else WHITE
+			RoadColour = WHITE  if (TrackSection-1) == 0 else GREY
 
 			h = i + W_HEIGHT//2
 			pygame.draw.line(SCREEN, GrassColour, (0, h), (LeftGrass, h))
