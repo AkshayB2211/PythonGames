@@ -4,6 +4,7 @@ import sys
 import pygame
 import pygame.gfxdraw
 import random
+import copy
 from pygame.locals import *
 
 WIDTH = 640
@@ -12,12 +13,12 @@ TITLE = "BLOCKUDU"
 FPS = 30
 
 # define colors
-BLACK = 0
+BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (120, 120, 120)
 
-color = [0xFFFFFF, 0xDC3C3C, 0x2DD22D, 0x1464C8, 0x32C819,
-  0xFFA500, 0x1E90FF, 0xFF3A5C, 0x36AED5, 0xFFFF00, 0x33EE44]
+colors = [0xFFFFFF, 0xDC3C3C, 0x2DD22D, 0x1464C8, 0x32C819,
+0xFFA500, 0x1E90FF, 0xFF3A5C, 0x36AED5, 0xFFFF00, 0x33EE44]
 
 rows = 9
 cols = 9
@@ -26,6 +27,7 @@ size = (HEIGHT-2*gap)//rows
 rects = []
 board = []
 overlay = []
+score = 0
 
 pieces = [ [[0,1,0],
 			[0,1,0],
@@ -97,8 +99,9 @@ def draw_board(surf, pos):
 		for j in range(rows):
 			if overlay[i+1][j+1]: alpha = 100
 			else: alpha = 0
-			pygame.draw.rect(surf, color[board[i][j]], rects[i][j])
-			pygame.gfxdraw.box(surf, rects[i][j], (0,0,255,alpha))
+			# index = board[i][j] % len(color)
+			pygame.draw.rect(surf, colors[board[i][j]], rects[i][j])
+			pygame.gfxdraw.box(surf, rects[i][j], (0,0,150,alpha))
 			pygame.draw.rect(surf, BLACK, rects[i][j], 1)
 	screen.blit(surf, pos)
 
@@ -134,6 +137,7 @@ def clear_matches():
 	for i in range(cols):
 		r = 0
 		c = 0
+		global score
 		for j in range(rows):
 			if board[i][j]:
 				r += 1
@@ -141,16 +145,19 @@ def clear_matches():
 				c += 1
 		if r == rows:
 			col.append(i)
+			score += 1
 		if c == cols:
 			row.append(i)
+			score += 1
 
 	# clear the matched lines on board
-	for i in range(cols):
-		for j in row:
-			board[i][j] = 0
-	for i in col:
-		for j in range(rows):
-			board[i][j] = 0
+	if row or col:
+		for i in range(cols):
+			for j in row:
+				board[i][j] = 0
+		for i in col:
+			for j in range(rows):
+				board[i][j] = 0
 
 def set_overlay(piece, pos):
 	x, y = pos
@@ -160,7 +167,14 @@ def set_overlay(piece, pos):
 			overlay[x+i][y+j] = piece[i][j]
 
 def get_next_piece():
-	return random.choice(pieces)
+	n = random.randint(0, len(pieces)-1)
+	piece = copy.deepcopy(pieces[n])
+	if n > 1:
+		for i in range(3):
+			for j in range(3):
+				if piece[i][j]:
+					piece[i][j] = n
+	return piece
 
 def draw_next_piece(rect, piece):
 	w = rect.width // 4
@@ -169,36 +183,50 @@ def draw_next_piece(rect, piece):
 		for j in range(3):
 			r.centerx = rect.x + (i+1)*w
 			r.centery = rect.y + (j+1)*w
-			pygame.draw.rect(screen, color[piece[i][j]], r)
+			# index = piece[i][j] % len(color)
+			pygame.draw.rect(screen, colors[piece[i][j]], r)
 	pygame.draw.rect(screen, BLACK, rect, 4)
 
 
-def draw_score(rect):
-	pygame.draw.rect(screen, BLACK, rect, 4)
+def draw_score(score_rect):
+	pygame.draw.rect(screen, BLACK, score_rect, 4)
 
-def text_obj(text, font, board):
-	surf = font.render(text, True, board)
-	return surf, surf.get_rect()
+	# Draw the label "Score"
+	font = pygame.font.Font('freesansbold.ttf', 20)
+	surf = font.render("Score", True, BLACK)
+	rect = surf.get_rect()
+	rect.center = score_rect.centerx, score_rect.top+20
+	screen.blit(surf, rect)
+
+	# Draw the score value
+	font = pygame.font.Font('freesansbold.ttf', 30)
+	surf = font.render(str(score), True, GREY)
+	rect = surf.get_rect()
+	rect.center = score_rect.center
+	screen.blit(surf, rect)
 
 def text_screen(text):
 	# This function displays large text in the
-	# center of the screen until a key is pressed.
+	# center of the screen until clicked.
 	# Draw the text drop shadow
-	BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
-	BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
-	surf, rect = text_obj(text, BIGFONT, GREY)
-	rect.center = (int(WIDTH / 2), int(HEIGHT / 2))
+	font = pygame.font.Font('freesansbold.ttf', 100)
+	surf = font.render(text, True, GREY)
+	rect = surf.get_rect()
+	rect.center = (WIDTH // 2, HEIGHT // 2)
 	screen.blit(surf, rect)
 
 	# Draw the text
-	surf, rect = text_obj(text, BIGFONT, WHITE)
-	rect.center = (int(WIDTH / 2) - 3, int(HEIGHT / 2) - 3)
+	surf = font.render(text, True, WHITE)
+	rect = surf.get_rect()
+	rect.center = (WIDTH // 2 - 3, HEIGHT // 2 - 3)
 	screen.blit(surf, rect)
 
-	# Draw the additional "Press a key to play." text.
-	pressKeySurf, pressKeyRect = text_obj('Click to continue.', BASICFONT, WHITE)
-	pressKeyRect.center = (int(WIDTH / 2), int(HEIGHT / 2) + 100)
-	screen.blit(pressKeySurf, pressKeyRect)
+	# Draw the additional "Click to continue." text.
+	font = pygame.font.Font('freesansbold.ttf', 18)
+	surf = font.render('Click to continue.', True, WHITE)
+	rect = surf.get_rect()
+	rect.center = (WIDTH // 2, HEIGHT // 2 + 100)
+	screen.blit(surf, rect)
 
 	pygame.display.flip()
 
@@ -208,6 +236,9 @@ def text_screen(text):
 		for event in pygame.event.get():
 			if event.type == MOUSEBUTTONUP:
 				pause = False
+			if event.type == QUIT:
+				pygame.quit()
+				sys.exit()
 
 def get_index(pos, rect):
 	x, y = pos
